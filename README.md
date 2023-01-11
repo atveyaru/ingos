@@ -93,7 +93,6 @@ select * from t;
 
 
 
-
 ### Вопрос 3. XML
 
 Имеется
@@ -298,8 +297,8 @@ select xmltransform(xml, xsl) as res from xlst;
 
 
 
-/*
-Вопрос 4. Коллекции
+
+### Вопрос 4. Коллекции
 
 Имеется декларация типа:
 
@@ -308,11 +307,11 @@ CREATE OR REPLACE TYPE TNUM as table of number;
 ```
 
 Необходимо написать реализацию функции, возвращающая в качестве
-.
+
 результата заполненный массив имеющий тип TNUM с значениями от 1..1000
-
-Ответ
-
+```
+<h4>Ответ</h4>
+```
 ```sql
 
 create or replace type tnum as table of number;
