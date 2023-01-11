@@ -31,11 +31,9 @@ connect IGS_TEST/1234@localhost:1521/XE;
 
 Ответ 
 
-```diff
-! Ответ
-```
+<h3 style="color:#ff0000">Danger</h3>
 
-<font color=darkorange size=10>Ответ</font>
+
 
 ```sql
 select trunc(dbms_random.value(level, level+3))
