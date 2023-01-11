@@ -25,10 +25,17 @@ connect IGS_TEST/1234@localhost:1521/XE;
 
 
 
-## Вопрос 1.
+##№ Вопрос 1
 Вывести 1000 случайных чисел от 1 до 1000, таких что
 не повторяются в этой последовательности, больше чем 3 раза.
+
 Ответ 
+
+```diff
+! Ответ
+```
+
+<font color=darkorange size=10>Ответ</font>
 
 ```sql
 select trunc(dbms_random.value(level, level+3))
