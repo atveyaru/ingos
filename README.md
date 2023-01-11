@@ -32,7 +32,7 @@ connect IGS_TEST/1234@localhost:1521/XE;
 Ответ 
 
 <h3 style="color:#ff0000">Danger</h3>
-
+<font color=gray size=72>color=gray</font>
 
 
 ```sql
