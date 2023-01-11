@@ -669,3 +669,225 @@ from clients c
   ) addr_body on addr_body.client_id = c.id and addr_body.id = addr_head.id
 order by 1;
 ```
+
+
+
+Вопрос 8. Необязательно
+
+Создать скрипт для заполнения таблиц CONTACTS и ADDRESSES в предыдущем задании <br>
+на основе случайных значений.  <br>
+Причем как по значению самого поля, так и по их количеству.<br>
+Условия <br>
+ - не более 5-6 вариантов на одного клиента; <br>
+ - Адресам могут совпадать; <br>
+ - Телефоны и почта - нет. <br>
+
+<h3>Ответ</h3>
+
+```sql 
+
+-- Контакты
+
+insert into CONTACTS
+with dmn as (
+select rownum as num, str from (
+  select '@mail.ru' str from dual
+  union select '@ya.ru' from  dual
+  union select '@yandex.ru' from  dual
+  union select '@gmial.com' from  dual
+  union select '@list.ru' from  dual
+  union select '@rm.net' from  dual
+  union select '@rambler.ru' from  dual
+  union select '@yota.su' from  dual
+  union select '@xxx.org' from  dual
+)
+)
+, eml_res as (
+select level lvl,
+  lower(DBMS_RANDOM.STRING('x', trunc(dbms_random.value(4, 5)))) as eml,
+  trunc(dbms_random.value(1, 9)) as dmn  
+from dual connect by level <= 150
+),
+email as (
+  select distinct
+    lvl,
+    eml||lpad(lvl, 3, '0')||dmn.str email,
+    1 as c_type
+  from dmn, eml_res where eml_res.dmn = dmn.num
+  order by 1
+)
+,
+clients_cont as (
+  select id cl_id, trunc(dbms_random.value(1, 6)) r_cnt
+  from clients
+),
+clients_cont_res as (
+  select distinct level as lvl, cl_id, cc.r_cnt as r_cnt
+  from clients_cont cc
+  connect by level <= cc.r_cnt
+  order by cl_id
+),
+clients_cont_all as (
+select
+  rownum lvl,
+  cl_id,
+  r_cnt
+from clients_cont_res),
+kd_country as (
+  select 1 as num, '8' as str from dual
+  union select 2, '+7' from dual
+)
+, phn_res as (
+  select distinct
+    level as ord,
+    trunc(dbms_random.value(100000, 999999)) as b0dy,
+    trunc(dbms_random.value(1, 3)) as ks_str
+  from dual connect by level <= 150
+),
+phone as (
+  select
+    phn_res.ord,
+    kd_country.str||'9'||phn_res.b0dy||lpad(phn_res.ord, 3, trunc(dbms_random.value(0, 9))) phone,
+    2 as c_type
+  from phn_res, kd_country
+  where phn_res.ks_str = kd_country.num
+),
+clients_contacts_1 as (
+  select
+    cca.lvl lvl,
+    cca.cl_id cl_id,
+    cca.r_cnt r_cnt,
+    trunc(dbms_random.value(1, 3)) c_type,
+    trunc(dbms_random.value(1, 31)) dlt_date,
+    trunc(dbms_random.value(0, 2)) active
+  from clients_cont_all cca
+)
+select
+  cc1.lvl id,
+  cc1.cl_id,
+  c_type,
+  decode(cc1.c_type, 1,
+    (select phone from phone where ord = cc1.lvl),
+    (select email from email where lvl = cc1.lvl)
+  ),
+  sysdate - cc1.dlt_date,
+  decode(cc1.active, 0, 'N', 'Y')
+from clients_contacts_1 cc1;
+commit;
+
+
+-- Адреса
+
+insert into ADDRESSES
+with
+city as (
+select rownum as id, str from (
+  select 'Москва' str from dual
+  union select 'Севастополь' from  dual
+  union select 'Саратов' from  dual
+  union select 'Туапсе' from  dual
+  union select 'Энгельс' from  dual
+  union select 'Краснодар' from  dual
+  union select 'Казань' from  dual
+  union select 'Тольятти' from  dual
+  union select 'Реутов' from  dual
+  union select 'Видное' from  dual
+  union select 'Лобня' from  dual
+  union select 'Зеленоград' from  dual
+  union select 'Серпухов' from  dual
+  union select 'Одинцово' from  dual
+  union select 'Мытищи' from  dual
+  union select 'Балашиха' from  dual
+  union select 'Королёв' from  dual
+  union select 'Люберцы' from  dual
+  union select 'Астрахань' from  dual
+  union select 'Орел' from  dual
+  union select 'Ростов-на-Дону' from  dual
+  union select 'Воронеж' from  dual
+  union select 'Белгород' from  dual
+)
+),
+street as (
+select rownum as id, str from (
+  select 'Симферопольский бульвар' str from dual
+  union select 'ул. Адмирала Макарова' from  dual
+  union select 'Тишинская площадь' from  dual
+  union select 'Звездный бульвар' from  dual
+  union select 'Новоясеневский проспект' from  dual
+  union select 'ул. Красная Сосна' from  dual
+  union select 'ул. Вавилова' from  dual
+  union select 'Большая Семёновская' from  dual
+  union select 'Рублевское шоссе' from  dual
+  union select '9-я Парковая улица' from  dual
+  union select 'Шарикоподшипниковская улица' from  dual
+  union select 'ул. Котовского' from  dual
+  union select 'проспект Ленинского Комсомола' from  dual
+  union select 'Краснополянский пр-д' from  dual
+  union select 'Панфиловский проспект' from  dual
+  union select 'Борисовское шоссе' from  dual
+  union select 'ул. Говорова' from  dual
+  union select 'ул. Селезнева' from  dual
+  union select 'шоссе Энтузиастов' from  dual
+  union select 'проспект Космонавтов' from  dual
+  union select 'Октябрьский проспект' from  dual
+  union select 'ул. Тургенева' from  dual
+  union select 'ул. Ленина' from  dual
+  union select 'ул. Пушкинская' from  dual
+  union select 'ул. М. Горького' from  dual
+  union select 'ул. Средне-Московская' from  dual
+  union select 'ул. Героев сибиряков' from  dual
+  union select 'ул. Б. Хмельницкого' from  dual
+  union select 'ул. Попова' from  dual
+  union select 'бульвар Свято-Троицкий' from  dual
+  union select 'бульвар Юности' from  dual
+  union select 'ул. Степана Разина' from  dual
+  union select 'ул. Степана Разина' from  dual
+  union select 'ул. Чайкина' from  dual
+  union select 'ул. Лизы Чайкиной' from  dual
+  union select 'ул. Громовой' from  dual
+  union select 'ул. Есенеа' from  dual
+  union select 'ул. Зои Космодемьянской' from  dual
+  union select 'ул. 40 лет Подбеды' from  dual
+  union select 'ул. 50 лет Октября' from  dual
+  union select 'ул. Тополиная' from  dual
+  union select 'бульвар Гая' from  dual
+)
+),
+clients_addr as (
+  select id cl_id, trunc(dbms_random.value(1, 6)) r_cnt
+  from clients
+),
+clients_addr_res as (
+  select distinct level as lvl, cl_id, ca.r_cnt
+  from clients_addr ca
+  connect by level <= ca.r_cnt
+  order by cl_id
+),
+clients_type as (
+  select distinct
+    cl_id,
+    r_cnt,
+    trunc(dbms_random.value(1, 4)) as a_type,
+    trunc(dbms_random.value(0, 23)) kod_city,
+    trunc(dbms_random.value(0, 41)) kod_street,
+    trunc(dbms_random.value(0, 23)) house,
+    trunc(dbms_random.value(0, 23)) flat,
+    trunc(dbms_random.value(0, 31)) dlt_date,
+    trunc(dbms_random.value(0, 2)) active
+  from clients_addr_res
+  order by cl_id
+)
+select
+  rownum id,
+  cl_id,
+  a_type,
+  (select str from city where id = kod_city) sity,
+  (select str from street where id = kod_street) ctreet,
+  decode(house, 0, '', house) house,
+  decode(flat, 0, '', flat) flat,
+  sysdate - dlt_date,
+  decode(active, 0, 'N', 'Y') active
+from clients_type
+order by 2,1,3;
+commit;
+```
